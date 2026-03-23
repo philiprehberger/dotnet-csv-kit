@@ -1,7 +1,7 @@
 # Philiprehberger.CsvKit
 
 [![CI](https://github.com/philiprehberger/dotnet-csv-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/philiprehberger/dotnet-csv-kit/actions/workflows/ci.yml)
-[![NuGet](https://img.shields.io/nuget/v/Philiprehberger.CsvKit)](https://www.nuget.org/packages/Philiprehberger.CsvKit)
+[![NuGet](https://img.shields.io/nuget/v/Philiprehberger.CsvKit.svg)](https://www.nuget.org/packages/Philiprehberger.CsvKit)
 [![License](https://img.shields.io/github/license/philiprehberger/dotnet-csv-kit)](LICENSE)
 
 Lightweight CSV reader and writer with header mapping, type conversion, and streaming support.
