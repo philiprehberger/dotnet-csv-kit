@@ -66,6 +66,7 @@ writer.WriteRow(["Alice", "30"]);
 | `Csv.Read<T>(string, CsvOptions?)` | Parse CSV string into typed records |
 | `Csv.Write<T>(IEnumerable<T>, CsvOptions?)` | Write typed records to CSV string |
 | `Csv.ReadRows(string, CsvOptions?)` | Parse CSV string into string arrays |
+| `Csv.ReadWithHeaders(string, CsvOptions?)` | Parse CSV and return headers and data rows separately |
 | `CsvReader.ReadRow()` | Read the next row as a string array |
 | `CsvWriter.WriteRow(string[])` | Write a single row |
 | `CsvMapper.Map<T>(string[], string[])` | Map header/values to a typed object |
