@@ -9,6 +9,7 @@ public sealed class CsvReader : IDisposable
     private readonly TextReader _reader;
     private readonly char _delimiter;
     private readonly char _quote;
+    private readonly char? _commentChar;
     private bool _disposed;
 
     /// <summary>
@@ -22,16 +23,98 @@ public sealed class CsvReader : IDisposable
         var opts = options ?? new CsvOptions();
         _delimiter = opts.Delimiter;
         _quote = opts.QuoteChar;
+        _commentChar = opts.CommentChar;
     }
 
     /// <summary>
-    /// Reads the next row from the CSV stream.
+    /// Reads the next row from the CSV stream, skipping comment lines.
     /// </summary>
     /// <returns>An array of field values, or null if there are no more rows.</returns>
     public string[]? ReadRow()
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
 
+        while (true)
+        {
+            var row = ReadRowCore();
+            if (row is null)
+                return null;
+
+            // Check if this is a comment line: single field starting with the comment char
+            if (_commentChar.HasValue && row.Length > 0 && row[0].Length > 0 && row[0][0] == _commentChar.Value)
+            {
+                continue;
+            }
+
+            return row;
+        }
+    }
+
+    /// <summary>
+    /// Reads all remaining rows from the CSV stream.
+    /// </summary>
+    /// <returns>A list of string arrays, one per row.</returns>
+    public List<string[]> ReadAllRows()
+    {
+        var rows = new List<string[]>();
+        while (ReadRow() is { } row)
+        {
+            rows.Add(row);
+        }
+        return rows;
+    }
+
+    /// <summary>
+    /// Detects the most likely delimiter character in the given CSV text by counting occurrences
+    /// of common delimiters in the first N lines.
+    /// </summary>
+    /// <param name="text">The CSV text to analyze.</param>
+    /// <param name="sampleLines">The number of lines to sample. Defaults to 5.</param>
+    /// <returns>The most likely delimiter character.</returns>
+    public static char DetectDelimiter(string text, int sampleLines = 5)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+
+        char[] candidates = [',', ';', '\t', '|'];
+        var counts = new Dictionary<char, int>();
+        foreach (var c in candidates)
+            counts[c] = 0;
+
+        using var reader = new StringReader(text);
+        int linesRead = 0;
+        while (linesRead < sampleLines)
+        {
+            var line = reader.ReadLine();
+            if (line is null)
+                break;
+
+            linesRead++;
+            foreach (var c in candidates)
+            {
+                foreach (var ch in line)
+                {
+                    if (ch == c)
+                        counts[c]++;
+                }
+            }
+        }
+
+        char best = ',';
+        int bestCount = 0;
+        foreach (var kvp in counts)
+        {
+            if (kvp.Value > bestCount)
+            {
+                bestCount = kvp.Value;
+                best = kvp.Key;
+            }
+        }
+
+        return best;
+    }
+
+    private string[]? ReadRowCore()
+    {
         var fields = new List<string>();
         var field = new System.Text.StringBuilder();
         bool inQuotes = false;
@@ -112,20 +195,6 @@ public sealed class CsvReader : IDisposable
         }
 
         return fields.ToArray();
-    }
-
-    /// <summary>
-    /// Reads all remaining rows from the CSV stream.
-    /// </summary>
-    /// <returns>A list of string arrays, one per row.</returns>
-    public List<string[]> ReadAllRows()
-    {
-        var rows = new List<string[]>();
-        while (ReadRow() is { } row)
-        {
-            rows.Add(row);
-        }
-        return rows;
     }
 
     /// <inheritdoc />

@@ -28,13 +28,56 @@ public static class Csv
                 return [];
         }
 
+        // Resolve column projection indices
+        int[]? projectedIndices = null;
+        string[]? projectedHeaders = null;
+        if (headers is not null && opts.Columns is not null)
+        {
+            var indexList = new List<int>();
+            var headerList = new List<string>();
+            foreach (var col in opts.Columns)
+            {
+                for (int i = 0; i < headers.Length; i++)
+                {
+                    if (string.Equals(headers[i].Trim(), col.Trim(), StringComparison.OrdinalIgnoreCase))
+                    {
+                        indexList.Add(i);
+                        headerList.Add(headers[i]);
+                        break;
+                    }
+                }
+            }
+            projectedIndices = indexList.ToArray();
+            projectedHeaders = headerList.ToArray();
+        }
+
+        var effectiveHeaders = projectedHeaders ?? headers;
         var results = new List<T>();
 
         while (reader.ReadRow() is { } row)
         {
-            if (headers is not null)
+            // Apply row filter before materializing
+            if (opts.SkipRow is not null && opts.SkipRow(row))
+                continue;
+
+            if (effectiveHeaders is not null)
             {
-                var obj = CsvMapper.Map<T>(headers, row, opts.CultureInfo);
+                string[] effectiveRow;
+                if (projectedIndices is not null)
+                {
+                    effectiveRow = new string[projectedIndices.Length];
+                    for (int i = 0; i < projectedIndices.Length; i++)
+                    {
+                        var idx = projectedIndices[i];
+                        effectiveRow[i] = idx < row.Length ? row[idx] : string.Empty;
+                    }
+                }
+                else
+                {
+                    effectiveRow = row;
+                }
+
+                var obj = CsvMapper.Map<T>(effectiveHeaders, effectiveRow, opts.CultureInfo);
                 results.Add(obj);
             }
         }
@@ -93,7 +136,15 @@ public static class Csv
             reader.ReadRow(); // Skip header
         }
 
-        return reader.ReadAllRows();
+        var rows = new List<string[]>();
+        while (reader.ReadRow() is { } row)
+        {
+            if (opts.SkipRow is not null && opts.SkipRow(row))
+                continue;
+            rows.Add(row);
+        }
+
+        return rows;
     }
 
     /// <summary>
@@ -110,7 +161,14 @@ public static class Csv
         using var reader = new CsvReader(new StringReader(csv), opts);
 
         var headers = reader.ReadRow() ?? [];
-        var rows = reader.ReadAllRows();
+
+        var rows = new List<string[]>();
+        while (reader.ReadRow() is { } row)
+        {
+            if (opts.SkipRow is not null && opts.SkipRow(row))
+                continue;
+            rows.Add(row);
+        }
 
         return (headers, rows);
     }

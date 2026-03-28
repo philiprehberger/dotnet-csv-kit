@@ -9,7 +9,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
     <PackageId>Philiprehberger.CsvKit</PackageId>
-    <Version>0.1.3</Version>
+    <Version>0.2.0</Version>
     <Authors>Philip Rehberger</Authors>
     <Description>Lightweight CSV reader and writer with header mapping, type conversion, and streaming support.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>

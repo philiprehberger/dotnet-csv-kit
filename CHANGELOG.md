@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.0 (2026-03-28)
+
+- Add column projection via `Columns` property on `CsvOptions`
+- Add automatic delimiter detection via `CsvReader.DetectDelimiter`
+- Add comment line support via `CommentChar` property on `CsvOptions`
+- Add row filtering via `SkipRow` predicate on `CsvOptions`
+- Add test project with xUnit tests
+- Add GitHub issue templates, dependabot config, and PR template
+- Update README with all 8 required badges and Support section
+
 ## 0.1.3 (2026-03-26)
 
 - Add Sponsor badge and fix License link format in README

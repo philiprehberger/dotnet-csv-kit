@@ -1,4 +1,4 @@
-name: CI
+name: CI + Publish
 
 on:
   push:
@@ -17,6 +17,7 @@ jobs:
           dotnet-version: '8.0.x'
       - run: dotnet restore src/Philiprehberger.CsvKit.csproj
       - run: dotnet build src/Philiprehberger.CsvKit.csproj --configuration Release --no-restore
+      - run: dotnet test tests/Philiprehberger.CsvKit.Tests/Philiprehberger.CsvKit.Tests.csproj --configuration Release --no-restore
 
   publish:
     needs: build
